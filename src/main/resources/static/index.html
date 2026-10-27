@@ -1,0 +1,342 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Studio — Resume Builder</title>
+    <style>
+        :root {
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #20213a;
+            background: #f6f7fb;
+            font-synthesis: none;
+        }
+
+        * { box-sizing: border-box; }
+
+        body { margin: 0; }
+
+        header {
+            height: 76px;
+            padding: 0 6%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            border-bottom: 1px solid #e9eaf2;
+        }
+
+        .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; font-size: 20px; }
+        .brand-icon {
+            width: 38px; height: 38px; display: grid; place-items: center;
+            border-radius: 12px; color: white; background: #635bff;
+        }
+
+        .header-label { color: #777b91; font-size: 13px; }
+
+        main { max-width: 1440px; margin: auto; padding: 42px 5%; }
+
+        .intro { margin-bottom: 30px; }
+        .eyebrow { color: #635bff; text-transform: uppercase; font-size: 11px; font-weight: 800; letter-spacing: 1.8px; }
+        h1 { margin: 10px 0; font-size: clamp(28px, 3vw, 38px); letter-spacing: -1.3px; }
+        .subtitle { color: #777b91; line-height: 1.6; margin: 0; }
+
+        .workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr); gap: 26px; align-items: start; }
+        .panel {
+            background: white; border: 1px solid #e9eaf2; border-radius: 20px;
+            padding: 28px; box-shadow: 0 8px 35px rgba(29, 32, 70, .035);
+        }
+
+        .panel-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; gap: 10px; }
+        h2 { font-size: 18px; margin: 0 0 5px; }
+        .muted { font-size: 12px; color: #898da1; }
+        .step { background: #f0efff; color: #635bff; border-radius: 9px; padding: 8px 10px; font-size: 12px; font-weight: 700; }
+
+        .section-title { margin: 26px 0 16px; font-size: 11px; letter-spacing: 1.3px; color: #777b91; font-weight: 800; }
+        .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 17px; }
+        .field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+        .field.full { grid-column: 1 / -1; }
+        label { font-size: 12px; font-weight: 700; color: #41435b; }
+
+        input, textarea {
+            width: 100%; border: 1px solid #e3e5ef; background: #fcfcfe; border-radius: 10px;
+            padding: 12px 13px; font: inherit; font-size: 13px; color: #252641; outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        input:focus, textarea:focus { border-color: #827bff; box-shadow: 0 0 0 3px #635bff17; }
+        textarea { min-height: 112px; resize: vertical; line-height: 1.6; }
+
+        .actions { display: flex; gap: 12px; margin-top: 25px; }
+        button {
+            border: 0; border-radius: 11px; padding: 13px 18px; cursor: pointer;
+            font: inherit; font-size: 13px; font-weight: 750; transition: transform .15s, opacity .15s;
+        }
+        button:hover { transform: translateY(-1px); }
+        .primary { flex: 1; background: #635bff; color: white; box-shadow: 0 6px 15px #635bff30; }
+        .secondary { background: #f0efff; color: #635bff; }
+        .status { min-height: 20px; margin-top: 14px; color: #27835d; font-size: 12px; }
+
+        .preview-panel { background: #f0f1f8; }
+        .preview-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; }
+        .live { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #328766; font-weight: 700; }
+        .live::before { content: ""; width: 7px; height: 7px; background: #3ab987; border-radius: 50%; }
+
+        .paper {
+            min-height: 520px; padding: 34px 30px; background: white; border-radius: 4px;
+            box-shadow: 0 8px 28px rgba(30, 33, 65, .09); overflow-wrap: anywhere;
+        }
+        .paper-name { font-size: 27px; letter-spacing: -1px; margin: 0 0 8px; color: #242540; }
+        .paper-contact { font-size: 11px; color: #777b91; line-height: 1.9; }
+        .paper-rule { height: 3px; width: 44px; border-radius: 5px; background: #635bff; margin: 23px 0; }
+        .paper h3 { font-size: 10px; letter-spacing: 1.5px; color: #635bff; text-transform: uppercase; margin: 23px 0 10px; }
+        .paper p { font-size: 12px; color: #51536a; line-height: 1.8; white-space: pre-wrap; margin: 0; }
+        .paper-education { font-size: 12px; font-weight: 700; color: #30314a; }
+        .paper-location { font-size: 11px; color: #777b91; margin-top: 5px; }
+
+        footer { text-align: center; padding: 25px; color: #999caf; font-size: 11px; }
+
+        @media (max-width: 850px) {
+            main { padding: 28px 4%; }
+            .workspace { grid-template-columns: 1fr; }
+            .panel { padding: 22px; }
+        }
+
+        @media (max-width: 480px) {
+            header { padding: 0 4%; }
+            .header-label { display: none; }
+            .fields { grid-template-columns: 1fr; }
+            .field.full { grid-column: auto; }
+            .actions { flex-direction: column; }
+            .paper { padding: 25px 21px; }
+        }
+    </style>
+
+    <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+            integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLus+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer">
+    </script>
+</head>
+<body>
+<header>
+    <div class="brand">
+        <div class="brand-icon">C</div>
+        <span>CV Studio</span>
+    </div>
+    <div class="header-label">Your next chapter starts here.</div>
+</header>
+
+<main>
+    <section class="intro">
+        <div class="eyebrow">Resume workspace</div>
+        <h1>Build a resume that opens doors.</h1>
+        <p class="subtitle">Add your details and see your professional resume take shape in real time.</p>
+    </section>
+
+    <div class="workspace">
+        <section class="panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Your information</h2>
+                    <div class="muted">Fill in the details below to get started.</div>
+                </div>
+                <span class="step">STEP 01 / 01</span>
+            </div>
+
+            <form id="resumeForm">
+                <div class="section-title">PERSONAL DETAILS</div>
+                <div class="fields">
+                    <div class="field full">
+                        <label for="fullName">Full name *</label>
+                        <input id="fullName" name="fullName" placeholder="e.g. Alex Morgan" required>
+                    </div>
+                    <div class="field">
+                        <label for="email">Email address *</label>
+                        <input id="email" name="email" type="email" placeholder="alex@example.com" required>
+                    </div>
+                    <div class="field">
+                        <label for="phoneNumber">Phone number</label>
+                        <input id="phoneNumber" name="phoneNumber" type="tel" placeholder="+7 700 123 4567">
+                    </div>
+                    <div class="field full">
+                        <label for="location">Location</label>
+                        <input id="location" name="location" placeholder="Almaty, Kazakhstan">
+                    </div>
+                </div>
+
+                <div class="section-title">EDUCATION & PROFILE</div>
+                <div class="fields">
+                    <div class="field full">
+                        <label for="education">Education</label>
+                        <input id="education" name="education" placeholder="e.g. BSc in Computer Science">
+                    </div>
+                    <div class="field full">
+                        <label for="summary">Professional summary</label>
+                        <textarea id="summary" name="summary" placeholder="Briefly describe your background, strengths, and career goals..."></textarea>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="primary" type="submit">Save my resume →</button>
+                    <button class="secondary" type="button" id="clearButton">Clear</button>
+                </div>
+                <div id="status" class="status" role="status" aria-live="polite"></div>
+            </form>
+        </section>
+
+        <section class="panel preview-panel">
+            <div class="preview-toolbar">
+                <div>
+                    <h2>Live preview</h2>
+                    <div class="muted">Your resume, updated as you type.</div>
+                </div>
+                <button class="secondary" type="button" id="downloadPdf">
+                    ↓ Download PDF
+                </button>            </div>
+
+            <article class="paper" id="resumePreview">
+                <h2 class="paper-name" id="previewName">Your Name</h2>
+                <div class="paper-contact" id="previewContact">email@example.com</div>
+                <div class="paper-rule"></div>
+                <h3>Professional Profile</h3>
+                <p id="previewSummary">Your professional summary will appear here. Highlight your experience, skills, and career ambitions.</p>
+                <h3>Education</h3>
+                <div class="paper-education" id="previewEducation">Your degree or qualification</div>
+                <div class="paper-location" id="previewLocation">Your location</div>
+            </article>
+        </section>
+    </div>
+</main>
+
+<footer>CV Studio · Create your next opportunity.</footer>
+
+<script>
+    const form = document.getElementById("resumeForm");
+    const fields = ["fullName", "email", "phoneNumber", "location", "education", "summary"];
+
+    function valueOf(id) {
+        return document.getElementById(id).value.trim();
+    }
+
+    function updatePreview() {
+        const name = valueOf("fullName");
+        const email = valueOf("email");
+        const phone = valueOf("phoneNumber");
+        const location = valueOf("location");
+        const education = valueOf("education");
+        const summary = valueOf("summary");
+
+        document.getElementById("previewName").textContent = name || "Your Name";
+        document.getElementById("previewContact").textContent =
+            [email, phone].filter(Boolean).join(" · ") || "email@example.com";
+        document.getElementById("previewSummary").textContent =
+            summary || "Your professional summary will appear here. Highlight your experience, skills, and career ambitions.";
+        document.getElementById("previewEducation").textContent = education || "Your degree or qualification";
+        document.getElementById("previewLocation").textContent = location || "Your location";
+    }
+
+    fields.forEach(id => {
+        document.getElementById(id).addEventListener("input", updatePreview);
+    });
+
+    document.getElementById("clearButton").addEventListener("click", () => {
+        form.reset();
+        document.getElementById("status").textContent = "";
+        updatePreview();
+    });
+
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+        const status = document.getElementById("status");
+        status.style.color = "#777b91";
+        status.textContent = "Saving your resume...";
+
+        const payload = {
+            fullName: valueOf("fullName"),
+            email: valueOf("email"),
+            phoneNumber: valueOf("phoneNumber") || null,
+            location: valueOf("location") || null,
+            education: valueOf("education") || null,
+            summary: valueOf("summary") || null
+        };
+
+        try {
+            const response = await fetch("/resumes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error("Server returned HTTP " + response.status);
+            }
+
+            const savedResume = await response.json();
+            status.style.color = "#27835d";
+            status.textContent = "Resume saved successfully! ID: " + savedResume.id;
+        } catch (error) {
+            status.style.color = "#c04444";
+            status.textContent = "Could not save the resume. Check that the backend is running and try again.";
+            console.error(error);
+        }
+    });
+
+    updatePreview();
+
+    document.getElementById("downloadPdf").addEventListener("click", async () => {
+        const button = document.getElementById("downloadPdf");
+        const status = document.getElementById("status");
+        const name = valueOf("fullName");
+
+        if (!name || !valueOf("email")) {
+            status.style.color = "#c04444";
+            status.textContent = "Please enter your name and email first.";
+            return;
+        }
+
+        if (typeof html2pdf === "undefined") {
+            status.style.color = "#c04444";
+            status.textContent = "PDF library failed to load. Check your internet connection.";
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = "Generating PDF...";
+
+        try {
+            const element = document.getElementById("resumePreview");
+
+            await html2pdf().set({
+                margin: [12, 12, 12, 12],
+                filename: name.trim().replace(/\s+/g, "-") + "-resume.pdf",
+                image: { type: "jpeg", quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: "#ffffff"
+                },
+                jsPDF: {
+                    unit: "mm",
+                    format: "a4",
+                    orientation: "portrait"
+                },
+                pagebreak: { mode: ["css", "legacy"] }
+            }).from(element).save();
+
+            status.style.color = "#27835d";
+            status.textContent = "Your PDF has been generated.";
+        } catch (error) {
+            console.error("PDF generation failed:", error);
+            status.style.color = "#c04444";
+            status.textContent = "Could not generate PDF. Please try again.";
+        } finally {
+            button.disabled = false;
+            button.textContent = "↓ Download PDF";
+        }
+    });
+</script>
+</body>
+</html>
