@@ -6,6 +6,8 @@ public record ResumeRequest(
         String summary,
         String phoneNumber,
         String education,
+        String skills,
+        String workExperience,
         String location
 ) {
 }

@@ -172,6 +172,23 @@
                         <label for="summary">Professional summary</label>
                         <textarea id="summary" name="summary" placeholder="Briefly describe your background, strengths, and career goals..."></textarea>
                     </div>
+                    <div class="field">
+                        <label for="skills">Skills</label>
+                        <textarea
+                                id="skills"
+                                name="skills"
+                                placeholder="Java, Spring Boot, PostgreSQL, Docker"
+                                rows="3"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <label for="workExperience">Work Experience</label>
+                        <textarea
+                                id="workExperience"
+                                name="workExperience"
+                                placeholder="Company, role, dates and responsibilities..."
+                                rows="4"></textarea>
+                    </div>
                 </div>
 
                 <div class="actions">
@@ -201,6 +218,11 @@
                 <h3>Education</h3>
                 <div class="paper-education" id="previewEducation">Your degree or qualification</div>
                 <div class="paper-location" id="previewLocation">Your location</div>
+                <h3>Skills</h3>
+                <p id="previewSkills">Your skills will appear here.</p>
+
+                <h3>Work Experience</h3>
+                <p id="previewWorkExperience">Your work experience will appear here.</p>
             </article>
         </section>
     </div>
@@ -210,8 +232,10 @@
 
 <script>
     const form = document.getElementById("resumeForm");
-    const fields = ["fullName", "email", "phoneNumber", "location", "education", "summary"];
-
+    const fields = [
+        "fullName", "email", "phoneNumber", "location",
+        "education", "summary", "skills", "workExperience"
+    ];
     function valueOf(id) {
         return document.getElementById(id).value.trim();
     }
@@ -223,6 +247,8 @@
         const location = valueOf("location");
         const education = valueOf("education");
         const summary = valueOf("summary");
+        const skills = valueOf("skills");
+        const workExperience = valueOf("workExperience");
 
         document.getElementById("previewName").textContent = name || "Your Name";
         document.getElementById("previewContact").textContent =
@@ -231,6 +257,11 @@
             summary || "Your professional summary will appear here. Highlight your experience, skills, and career ambitions.";
         document.getElementById("previewEducation").textContent = education || "Your degree or qualification";
         document.getElementById("previewLocation").textContent = location || "Your location";
+        document.getElementById("previewSkills").textContent =
+            skills || "Your skills will appear here.";
+
+        document.getElementById("previewWorkExperience").textContent =
+            workExperience || "Your work experience will appear here.";
     }
 
     fields.forEach(id => {
@@ -255,8 +286,9 @@
             phoneNumber: valueOf("phoneNumber") || null,
             location: valueOf("location") || null,
             education: valueOf("education") || null,
-            summary: valueOf("summary") || null
-        };
+            summary: valueOf("summary") || null,
+            skills: valueOf("skills") || null,
+            workExperience: valueOf("workExperience") || null        };
 
         try {
             const response = await fetch("/resumes", {

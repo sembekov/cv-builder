@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 public class ResumeMapper {
     public static ResumeResponse toResponse(Resume resume) {
-        ResumeResponse resumeResponse = new ResumeResponse(resume.getId(), resume.getFullName(), resume.getEmail(), resume.getDescription(), resume.getPhoneNumber(), resume.getEducation(), resume.getLocation());
+        ResumeResponse resumeResponse = new ResumeResponse(resume.getId(), resume.getFullName(), resume.getEmail(), resume.getDescription(), resume.getPhoneNumber(), resume.getEducation(), resume.getSkills(), resume.getWorkExperience(), resume.getLocation());
         return resumeResponse;
     }
 }

@@ -7,6 +7,8 @@ public record ResumeResponse(
         String summary,
         String phoneNumber,
         String education,
+        String skills,
+        String workExperience,
         String location
 ) {
 }

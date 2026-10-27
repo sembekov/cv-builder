@@ -33,6 +33,8 @@ public class ResumeService {
         newResume.setEmail(resumeRequest.email());
         newResume.setPhoneNumber(resumeRequest.phoneNumber());
         newResume.setEducation(resumeRequest.education());
+        newResume.setSkills(resumeRequest.skills());
+        newResume.setWorkExperience(resumeRequest.workExperience());
         newResume.setLocation(resumeRequest.location());
 
         Resume savedResume = resumeRepository.save(newResume);
@@ -44,6 +46,8 @@ public class ResumeService {
                 savedResume.getDescription(),
                 savedResume.getPhoneNumber(),
                 savedResume.getEducation(),
+                savedResume.getSkills(),
+                savedResume.getWorkExperience(),
                 savedResume.getLocation()
         );
     }

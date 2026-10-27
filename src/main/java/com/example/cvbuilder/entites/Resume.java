@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Resume {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String fullName;
@@ -22,5 +22,7 @@ public class Resume {
     private String description;
     private String phoneNumber;
     private String education;
+    private String skills;
+    private String workExperience;
     private String location;
 }
