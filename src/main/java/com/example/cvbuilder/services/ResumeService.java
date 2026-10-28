@@ -58,4 +58,12 @@ public class ResumeService {
                 .map(ResumeMapper::toResponse)
                 .toList();
     }
+
+    public void deleteResume(Long id) {
+        if (!resumeRepository.existsById(id)) {
+            throw new ResumeNotFoundException("Resume not found: " + id);
+        }
+
+        resumeRepository.deleteById(id);
+    }
 }
