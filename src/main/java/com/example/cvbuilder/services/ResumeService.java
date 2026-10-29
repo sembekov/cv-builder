@@ -27,29 +27,15 @@ public class ResumeService {
     }
 
     public ResumeResponse addNewResume(ResumeRequest resumeRequest) {
-        Resume newResume = new Resume();
-        newResume.setFullName(resumeRequest.fullName());
-        newResume.setDescription(resumeRequest.summary());
-        newResume.setEmail(resumeRequest.email());
-        newResume.setPhoneNumber(resumeRequest.phoneNumber());
-        newResume.setEducation(resumeRequest.education());
-        newResume.setSkills(resumeRequest.skills());
-        newResume.setWorkExperience(resumeRequest.workExperience());
-        newResume.setLocation(resumeRequest.location());
+        String finalSummary = resumeRequest.summary();
 
+        if (finalSummary == null || finalSummary.isEmpty()) {
+            // AI function
+        }
+
+        Resume newResume = ResumeMapper.toEntityFromRequest(resumeRequest, finalSummary);
         Resume savedResume = resumeRepository.save(newResume);
-
-        return new ResumeResponse(
-                savedResume.getId(),
-                savedResume.getFullName(),
-                savedResume.getEmail(),
-                savedResume.getDescription(),
-                savedResume.getPhoneNumber(),
-                savedResume.getEducation(),
-                savedResume.getSkills(),
-                savedResume.getWorkExperience(),
-                savedResume.getLocation()
-        );
+        return ResumeMapper.toResponse(savedResume);
     }
 
     public List<ResumeResponse> getAllResumes()  {
@@ -57,6 +43,25 @@ public class ResumeService {
                 .stream()
                 .map(ResumeMapper::toResponse)
                 .toList();
+    }
+
+    public ResumeResponse updateResume(Long id, ResumeRequest resumeRequest) {
+        Resume existingResume = resumeRepository.findById(id)
+                .orElseThrow(() -> new ResumeNotFoundException("Resume not found with id: " + id));
+
+        existingResume.setFullName(resumeRequest.fullName());
+        existingResume.setEmail(resumeRequest.email());
+        existingResume.setPhoneNumber(resumeRequest.phoneNumber());
+        existingResume.setLocation(resumeRequest.location());
+        existingResume.setSkills(resumeRequest.skills());
+        existingResume.setWorkExperience(resumeRequest.workExperience());
+        existingResume.setEducation(resumeRequest.education());
+
+        if (!resumeRequest.summary().isBlank() || resumeRequest.summary() != null) {
+            existingResume.setDescription(resumeRequest.summary());
+        }
+
+        return ResumeMapper.toResponse(existingResume);
     }
 
     public void deleteResume(Long id) {

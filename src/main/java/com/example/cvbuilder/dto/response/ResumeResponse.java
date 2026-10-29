@@ -1,5 +1,7 @@
 package com.example.cvbuilder.dto.response;
 
+import java.util.List;
+
 public record ResumeResponse(
         Long id,
         String fullName,
@@ -7,7 +9,7 @@ public record ResumeResponse(
         String summary,
         String phoneNumber,
         String education,
-        String skills,
+        List<String> skills,
         String workExperience,
         String location
 ) {

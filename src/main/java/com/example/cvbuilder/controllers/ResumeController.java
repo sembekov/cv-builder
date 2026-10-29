@@ -3,6 +3,7 @@ package com.example.cvbuilder.controllers;
 import com.example.cvbuilder.dto.request.ResumeRequest;
 import com.example.cvbuilder.dto.response.ResumeResponse;
 import com.example.cvbuilder.services.ResumeService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,12 @@ public class ResumeController {
     public ResponseEntity<ResumeResponse> addResume(@RequestBody ResumeRequest resumeRequest) {
         ResumeResponse resumeResponse = resumeService.addNewResume(resumeRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(resumeResponse);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ResumeResponse> updateResume(@PathVariable Long id, @Valid @RequestBody ResumeRequest resumeRequest) {
+        ResumeResponse resumeResponse = resumeService.updateResume(id, resumeRequest);
+        return ResponseEntity.ok(resumeResponse);
     }
 
     @DeleteMapping("/{id}")
