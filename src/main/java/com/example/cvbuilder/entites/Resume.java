@@ -3,6 +3,7 @@ package com.example.cvbuilder.entites;
 import com.example.cvbuilder.dto.request.EducationRequest;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.type.descriptor.sql.internal.Scale6IntervalSecondDdlType;
 
 import java.sql.Array;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class Resume {
     private String description;
     private String phoneNumber;
 
-    @OneToMany(mappedBy = "resume")
+    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Education> education = new ArrayList<>();
 
     @ElementCollection
@@ -35,7 +36,7 @@ public class Resume {
     @Column(name = "skill")
     private List<String> skills = new ArrayList<>();
 
-    @OneToMany(mappedBy = "resume")
+    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkExperience> workExperience = new ArrayList<>();
     private String location;
 }

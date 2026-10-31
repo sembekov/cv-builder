@@ -2,17 +2,20 @@ package com.example.cvbuilder.services;
 
 import com.example.cvbuilder.dto.request.ResumeRequest;
 import com.example.cvbuilder.dto.response.ResumeResponse;
+import com.example.cvbuilder.entites.Education;
 import com.example.cvbuilder.entites.Resume;
+import com.example.cvbuilder.entites.WorkExperience;
 import com.example.cvbuilder.exceptions.ResumeNotFoundException;
+import com.example.cvbuilder.mapper.EducationMapper;
 import com.example.cvbuilder.mapper.ResumeMapper;
+import com.example.cvbuilder.mapper.WorkExperienceMapper;
 import com.example.cvbuilder.repositories.ResumeRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import static com.example.cvbuilder.mapper.ResumeMapper.*;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +26,7 @@ public class ResumeService {
         Resume resume = resumeRepository.findById(id)
                 .orElseThrow(() -> new ResumeNotFoundException("Resume not found"));
 
-        ResumeResponse response = toResponse(resume);
-        return response;
+        return ResumeMapper.toResponse(resume);
     }
 
     public ResumeResponse addNewResume(ResumeRequest resumeRequest) {
@@ -53,14 +55,30 @@ public class ResumeService {
 
         existingResume.setFullName(resumeRequest.fullName());
         existingResume.setEmail(resumeRequest.email());
+        existingResume.setDescription(resumeRequest.summary());
         existingResume.setPhoneNumber(resumeRequest.phoneNumber());
         existingResume.setLocation(resumeRequest.location());
-        existingResume.setSkills(resumeRequest.skills());
-        existingResume.setWorkExperience(resumeRequest.workExperience());
-        existingResume.setEducation(resumeRequest.education());
+        existingResume.setSkills(new ArrayList<>(resumeRequest.skills()));
 
-        if (resumeRequest.summary() != null && !resumeRequest.summary().isBlank()) {
-            existingResume.setDescription(resumeRequest.summary());
+        existingResume.getEducation().clear();
+
+        if (existingResume.getEducation() != null) {
+            List<Education> educations = resumeRequest.education().stream()
+                    .map(EducationMapper::toEntityFromRequest)
+                    .toList();
+
+            educations.forEach(education -> education.setResume(existingResume));
+            existingResume.getEducation().addAll(educations);
+        }
+
+        existingResume.getWorkExperience().clear();
+
+        if (existingResume.getWorkExperience() != null) {
+            List<WorkExperience> workExperiences = resumeRequest.workExperience().stream()
+                    .map(WorkExperienceMapper::fromRequestToEntity)
+                    .toList();
+            workExperiences.forEach(workExperience -> workExperience.setResume(existingResume));
+            existingResume.getWorkExperience().addAll(workExperiences);
         }
 
         return ResumeMapper.toResponse(existingResume);
@@ -81,13 +99,21 @@ public class ResumeService {
             existingResume.setDescription(resumeRequest.summary());
         }
         if (resumeRequest.education() != null) {
-            existingResume.setEducation(resumeRequest.education());
+            List<Education> educations = resumeRequest.education().stream()
+                    .map(EducationMapper::toEntityFromRequest)
+                    .toList();
+            educations.forEach(item -> item.setResume(existingResume));
+            existingResume.setEducation(new ArrayList<>(educations));
         }
         if (resumeRequest.phoneNumber() != null) {
             existingResume.setPhoneNumber(resumeRequest.phoneNumber());
         }
         if (resumeRequest.workExperience() != null) {
-            existingResume.setWorkExperience(resumeRequest.workExperience());
+            List<WorkExperience> workExperiences = resumeRequest.workExperience().stream()
+                    .map(WorkExperienceMapper::fromRequestToEntity)
+                    .toList();
+            workExperiences.forEach(item -> item.setResume(existingResume));
+            existingResume.setWorkExperience(new ArrayList<>(workExperiences));
         }
         if (resumeRequest.skills() != null) {
             existingResume.setSkills(resumeRequest.skills());
