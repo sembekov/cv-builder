@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/resumes")
+@RequestMapping("/api/resumes")
 public class ResumeController {
     private final ResumeService resumeService;
 
@@ -38,6 +38,11 @@ public class ResumeController {
     public ResponseEntity<ResumeResponse> updateResume(@PathVariable Long id, @Valid @RequestBody ResumeRequest resumeRequest) {
         ResumeResponse resumeResponse = resumeService.updateResume(id, resumeRequest);
         return ResponseEntity.ok(resumeResponse);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ResumeResponse> patchResume(@PathVariable Long id, @RequestBody ResumeRequest resumeRequest) {
+        return ResponseEntity.ok(resumeService.patchResume(id, resumeRequest));
     }
 
     @DeleteMapping("/{id}")

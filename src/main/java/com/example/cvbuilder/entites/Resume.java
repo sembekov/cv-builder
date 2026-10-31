@@ -1,18 +1,16 @@
 package com.example.cvbuilder.entites;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.example.cvbuilder.dto.request.EducationRequest;
+import jakarta.persistence.*;
+import lombok.*;
 
+import java.sql.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -25,8 +23,19 @@ public class Resume {
     private String email;
     private String description;
     private String phoneNumber;
-    private String education;
-    private List<String> skills;
-    private String workExperience;
+
+    @OneToMany(mappedBy = "resume")
+    private List<Education> education = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(
+            name = "resume_skills",
+            joinColumns = @JoinColumn(name = "resume_id")
+    )
+    @Column(name = "skill")
+    private List<String> skills = new ArrayList<>();
+
+    @OneToMany(mappedBy = "resume")
+    private List<WorkExperience> workExperience = new ArrayList<>();
     private String location;
 }

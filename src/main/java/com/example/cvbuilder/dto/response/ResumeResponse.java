@@ -1,5 +1,8 @@
 package com.example.cvbuilder.dto.response;
 
+import com.example.cvbuilder.dto.request.EducationRequest;
+import com.example.cvbuilder.dto.request.WorkExperienceRequest;
+
 import java.util.List;
 
 public record ResumeResponse(
@@ -8,9 +11,9 @@ public record ResumeResponse(
         String email,
         String summary,
         String phoneNumber,
-        String education,
+        List<EducationRequest> education,
         List<String> skills,
-        String workExperience,
+        List<WorkExperienceRequest> workExperience,
         String location
 ) {
 }

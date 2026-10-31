@@ -1,40 +1,75 @@
 package com.example.cvbuilder.mapper;
 
+import com.example.cvbuilder.dto.request.EducationRequest;
 import com.example.cvbuilder.dto.request.ResumeRequest;
+import com.example.cvbuilder.dto.request.WorkExperienceRequest;
 import com.example.cvbuilder.dto.response.ResumeResponse;
+import com.example.cvbuilder.entites.Education;
 import com.example.cvbuilder.entites.Resume;
+import com.example.cvbuilder.entites.WorkExperience;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class ResumeMapper {
     public static ResumeResponse toResponse(Resume resume) {
-        ResumeResponse resumeResponse = new ResumeResponse(resume.getId(), resume.getFullName(), resume.getEmail(), resume.getDescription(), resume.getPhoneNumber(), resume.getEducation(), resume.getSkills(), resume.getWorkExperience(), resume.getLocation());
-        return resumeResponse;
+        List<EducationRequest> educationRequests = resume.getEducation().stream()
+                .map(EducationMapper::toRequestFromEntity)
+                .toList();
+
+        List<WorkExperienceRequest> workExperience = resume.getWorkExperience().stream()
+                .map(WorkExperienceMapper::fromEntityToRequest)
+                .toList();
+
+        return new ResumeResponse(
+                resume.getId(),
+                resume.getFullName(),
+                resume.getEmail(),
+                resume.getDescription(),
+                resume.getPhoneNumber(),
+                educationRequests,
+                resume.getSkills(),
+                workExperience,
+                resume.getLocation()
+        );
     }
 
-    public static Resume toEntityFromRequest(ResumeRequest resumeRequest) {
+    public static Resume toEntity(ResumeRequest resumeRequest) {
+        return toEntity(resumeRequest, resumeRequest.summary());
+    }
+
+    public static Resume toEntity(ResumeRequest resumeRequest, String finalSummary) {
         Resume newResume = new Resume();
         newResume.setFullName(resumeRequest.fullName());
         newResume.setEmail(resumeRequest.email());
-        newResume.setDescription(resumeRequest.summary());
+        newResume.setDescription(finalSummary);
         newResume.setPhoneNumber(resumeRequest.phoneNumber());
-        newResume.setEducation(resumeRequest.education());
-        newResume.setSkills(resumeRequest.skills());
-        newResume.setWorkExperience(resumeRequest.workExperience());
+
+        List<Education> education = resumeRequest.education() == null
+                ? new ArrayList<>()
+                : resumeRequest.education().stream()
+                .map(EducationMapper::toEntityFromRequest)
+                .toList();
+        education.forEach(item -> item.setResume(newResume));
+        newResume.setEducation(new ArrayList<>(education));
+
+        List<WorkExperience> workExperiences = resumeRequest.workExperience() == null
+                ? new ArrayList<>()
+                : resumeRequest.workExperience().stream()
+                .map(WorkExperienceMapper::fromRequestToEntity)
+                .toList();
+        workExperiences.forEach(item -> item.setResume(newResume));
+        newResume.setWorkExperience(workExperiences);
+
+        newResume.setSkills(
+                resumeRequest.skills() != null
+                        ? new ArrayList<>(resumeRequest.skills())
+                        : new ArrayList<>()
+        );
         newResume.setLocation(resumeRequest.location());
 
         return newResume;
-    }
-
-    public static Resume toEntityFromRequest(ResumeRequest resumeRequest, String finalSummary) {
-        return Resume.builder()
-                .fullName(resumeRequest.fullName())
-                .email(resumeRequest.email())
-                .description(resumeRequest.summary())
-                .phoneNumber(resumeRequest.phoneNumber())
-                .education(resumeRequest.education())
-                .skills(resumeRequest.skills())
-                .workExperience(resumeRequest.workExperience())
-                .location(resumeRequest.location())
-                .build();
     }
 }

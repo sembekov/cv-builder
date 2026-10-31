@@ -1,5 +1,6 @@
 package com.example.cvbuilder.dto.request;
 
+import com.example.cvbuilder.entites.Education;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -16,12 +17,12 @@ public record ResumeRequest(
 
         String summary,
         String phoneNumber,
-        String education,
+        List<EducationRequest> education,
 
         @NotEmpty(message = "At least one skills is required")
         List<String> skills,
 
-        String workExperience,
+        List<WorkExperienceRequest> workExperience,
         String location
 ) {
 }

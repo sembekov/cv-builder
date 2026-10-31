@@ -6,6 +6,7 @@ import com.example.cvbuilder.entites.Resume;
 import com.example.cvbuilder.exceptions.ResumeNotFoundException;
 import com.example.cvbuilder.mapper.ResumeMapper;
 import com.example.cvbuilder.repositories.ResumeRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +34,7 @@ public class ResumeService {
             // AI function
         }
 
-        Resume newResume = ResumeMapper.toEntityFromRequest(resumeRequest, finalSummary);
+        Resume newResume = ResumeMapper.toEntity(resumeRequest, finalSummary);
         Resume savedResume = resumeRepository.save(newResume);
         return ResumeMapper.toResponse(savedResume);
     }
@@ -45,6 +46,7 @@ public class ResumeService {
                 .toList();
     }
 
+    @Transactional
     public ResumeResponse updateResume(Long id, ResumeRequest resumeRequest) {
         Resume existingResume = resumeRepository.findById(id)
                 .orElseThrow(() -> new ResumeNotFoundException("Resume not found with id: " + id));
@@ -57,8 +59,41 @@ public class ResumeService {
         existingResume.setWorkExperience(resumeRequest.workExperience());
         existingResume.setEducation(resumeRequest.education());
 
-        if (!resumeRequest.summary().isBlank() || resumeRequest.summary() != null) {
+        if (resumeRequest.summary() != null && !resumeRequest.summary().isBlank()) {
             existingResume.setDescription(resumeRequest.summary());
+        }
+
+        return ResumeMapper.toResponse(existingResume);
+    }
+
+    @Transactional
+    public ResumeResponse patchResume(Long id, ResumeRequest resumeRequest) {
+        Resume existingResume = resumeRepository.findById(id)
+                .orElseThrow(() -> new ResumeNotFoundException("Resume not found with id: " + id));
+
+        if (resumeRequest.fullName() != null) {
+            existingResume.setFullName(resumeRequest.fullName());
+        }
+        if (resumeRequest.email() != null) {
+            existingResume.setEmail(resumeRequest.email());
+        }
+        if (resumeRequest.summary() != null) {
+            existingResume.setDescription(resumeRequest.summary());
+        }
+        if (resumeRequest.education() != null) {
+            existingResume.setEducation(resumeRequest.education());
+        }
+        if (resumeRequest.phoneNumber() != null) {
+            existingResume.setPhoneNumber(resumeRequest.phoneNumber());
+        }
+        if (resumeRequest.workExperience() != null) {
+            existingResume.setWorkExperience(resumeRequest.workExperience());
+        }
+        if (resumeRequest.skills() != null) {
+            existingResume.setSkills(resumeRequest.skills());
+        }
+        if (resumeRequest.location() != null) {
+            existingResume.setLocation(resumeRequest.location());
         }
 
         return ResumeMapper.toResponse(existingResume);
