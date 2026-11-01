@@ -62,7 +62,7 @@ public class ResumeService {
 
         existingResume.getEducation().clear();
 
-        if (existingResume.getEducation() != null) {
+        if (resumeRequest.education() != null) {
             List<Education> educations = resumeRequest.education().stream()
                     .map(EducationMapper::toEntityFromRequest)
                     .toList();
@@ -73,7 +73,7 @@ public class ResumeService {
 
         existingResume.getWorkExperience().clear();
 
-        if (existingResume.getWorkExperience() != null) {
+        if (resumeRequest.workExperience() != null) {
             List<WorkExperience> workExperiences = resumeRequest.workExperience().stream()
                     .map(WorkExperienceMapper::fromRequestToEntity)
                     .toList();
