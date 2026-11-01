@@ -1,29 +1,70 @@
-
 import { useEffect, useState } from 'react'
-import { getResumes } from './services/resumeService'
-import type { Resume } from './types/resume'
+import ResumeEditor from './components/ResumeEditor'
+import {
+  createResume,
+  getResumes,
+  updateResume,
+} from './services/resumeService'
+import type { Resume, ResumePayload } from './types/resume'
 
 function App() {
   const [resumes, setResumes] = useState<Resume[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function loadResumes() {
-      try {
-        const data = await getResumes()
-        setResumes(data)
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Something went wrong',
-        )
-      } finally {
-        setLoading(false)
-      }
-    }
+  const [showEditor, setShowEditor] = useState(false)
+  const [selectedResume, setSelectedResume] = useState<Resume | undefined>()
 
+  useEffect(() => {
     loadResumes()
   }, [])
+
+  async function loadResumes() {
+    try {
+      setError(null)
+      const data = await getResumes()
+      setResumes(data)
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Something went wrong',
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function openNewResume() {
+    setSelectedResume(undefined)
+    setShowEditor(true)
+  }
+
+  function openExistingResume(resume: Resume) {
+    setSelectedResume(resume)
+    setShowEditor(true)
+  }
+
+  async function handleSave(data: ResumePayload) {
+    if (selectedResume) {
+      await updateResume(selectedResume.id, data)
+    } else {
+      await createResume(data)
+    }
+
+    await loadResumes()
+
+    setShowEditor(false)
+    setSelectedResume(undefined)
+  }
+
+  if (showEditor) {
+    return (
+      <ResumeEditor
+        initialResume={selectedResume}
+        onBack={() => setShowEditor(false)}
+        onSave={handleSave}
+      />
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#101114] text-[#E5E7EB]">
@@ -34,6 +75,7 @@ function App() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/15 text-lg font-bold text-violet-300 ring-1 ring-violet-400/20">
               C
             </div>
+
             <span className="text-lg font-semibold tracking-tight">
               Craft<span className="text-violet-400">CV</span>
             </span>
@@ -48,7 +90,7 @@ function App() {
               href="#dashboard"
               className="flex items-center gap-3 rounded-lg border border-violet-400/10 bg-violet-400/10 px-3 py-2.5 text-sm font-medium text-violet-300"
             >
-              <span className="text-base">▦</span>
+              <span>▦</span>
               Dashboard
             </a>
 
@@ -56,7 +98,7 @@ function App() {
               href="#resumes"
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#9295A1] transition hover:bg-[#202127] hover:text-white"
             >
-              <span className="text-base">▤</span>
+              <span>▤</span>
               My resumes
             </a>
 
@@ -64,7 +106,7 @@ function App() {
               href="#templates"
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#9295A1] transition hover:bg-[#202127] hover:text-white"
             >
-              <span className="text-base">▧</span>
+              <span>▧</span>
               Templates
             </a>
           </nav>
@@ -73,9 +115,11 @@ function App() {
             <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-[#282332] text-violet-300">
               ✦
             </div>
+
             <p className="text-sm font-medium text-[#E5E7EB]">
               Make your next move
             </p>
+
             <p className="mt-1.5 text-xs leading-5 text-[#858895]">
               Build a professional resume and get ready for new opportunities.
             </p>
@@ -86,8 +130,9 @@ function App() {
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#292B34] text-sm font-semibold text-[#C4B5FD]">
                 U
               </div>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">My workspace</p>
+
+              <div>
+                <p className="text-sm font-medium">My workspace</p>
                 <p className="text-xs text-[#777B87]">Personal account</p>
               </div>
             </div>
@@ -101,6 +146,7 @@ function App() {
               <p className="text-xs text-[#777B87]">
                 Workspace <span className="mx-1.5">/</span> Dashboard
               </p>
+
               <h1 className="mt-1 text-lg font-semibold tracking-tight">
                 Dashboard
               </h1>
@@ -108,10 +154,10 @@ function App() {
 
             <button
               type="button"
-              className="rounded-lg bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-400/50"
+              onClick={openNewResume}
+              className="rounded-lg bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-400"
             >
-              <span className="mr-1.5">+</span>
-              New resume
+              + New resume
             </button>
           </header>
 
@@ -138,21 +184,22 @@ function App() {
 
                 <button
                   type="button"
+                  onClick={openNewResume}
                   className="mt-6 rounded-lg bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-400"
                 >
-                  Create a resume
-                  <span className="ml-2">→</span>
+                  Create a resume →
                 </button>
               </div>
             </section>
 
-            {/* Resume section */}
+            {/* Resume list */}
             <section className="mt-10" id="resumes">
               <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
                 <div>
                   <h2 className="text-base font-semibold text-white">
                     Your resumes
                   </h2>
+
                   <p className="mt-1 text-sm text-[#858895]">
                     Manage and edit your professional documents.
                   </p>
@@ -169,6 +216,7 @@ function App() {
               {loading && (
                 <div className="rounded-xl border border-[#292B34] bg-[#17181D] py-16 text-center">
                   <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[#393B45] border-t-violet-400" />
+
                   <p className="mt-4 text-sm text-[#858895]">
                     Loading your resumes...
                   </p>
@@ -180,10 +228,18 @@ function App() {
                   <p className="text-sm font-semibold text-red-300">
                     Could not load resumes
                   </p>
-                  <p className="mt-1 text-sm text-red-300/70">{error}</p>
-                  <p className="mt-3 text-xs text-[#858895]">
-                    Make sure the Spring Boot backend is running on port 8080.
+
+                  <p className="mt-1 text-sm text-red-300/70">
+                    {error}
                   </p>
+
+                  <button
+                    type="button"
+                    onClick={loadResumes}
+                    className="mt-3 text-xs font-semibold text-red-300 underline"
+                  >
+                    Try again
+                  </button>
                 </div>
               )}
 
@@ -192,13 +248,23 @@ function App() {
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-[#34303F] bg-[#211D2B] text-xl text-violet-300">
                     +
                   </div>
+
                   <h3 className="mt-5 text-sm font-semibold text-white">
                     No resumes yet
                   </h3>
+
                   <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#858895]">
                     Your workspace is ready. Create your first resume to get
                     started.
                   </p>
+
+                  <button
+                    type="button"
+                    onClick={openNewResume}
+                    className="mt-5 rounded-lg bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-400"
+                  >
+                    Create your first resume
+                  </button>
                 </div>
               )}
 
@@ -246,18 +312,13 @@ function App() {
                             <h3 className="truncate text-sm font-semibold text-[#E5E7EB]">
                               {resume.fullName || 'Untitled resume'}
                             </h3>
+
                             <p className="mt-1 truncate text-xs text-[#858895]">
                               {resume.email}
                             </p>
                           </div>
 
-                          <button
-                            type="button"
-                            aria-label="More options"
-                            className="rounded-md px-2 py-1 text-[#777B87] transition hover:bg-[#30313A] hover:text-white"
-                          >
-                            ···
-                          </button>
+                          <span className="text-[#777B87]">···</span>
                         </div>
 
                         <div className="mt-5 flex items-center justify-between border-t border-[#2B2D35] pt-4">
@@ -267,6 +328,7 @@ function App() {
 
                           <button
                             type="button"
+                            onClick={() => openExistingResume(resume)}
                             className="text-xs font-semibold text-violet-300 transition hover:text-violet-200"
                           >
                             Open editor →

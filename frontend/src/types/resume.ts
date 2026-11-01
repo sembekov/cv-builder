@@ -1,19 +1,17 @@
 export interface Education {
-  id?: number
   institution: string
   degree: string
-  fieldOfStudy?: string
-  startDate?: string
-  endDate?: string
+  fieldOfStudy: string
+  startDate: string | null
+  endDate: string | null
 }
 
 export interface WorkExperience {
-  id?: number
-  company: string
+  companyName: string
   position: string
-  description?: string
-  startDate?: string
-  endDate?: string
+  description: string
+  startDate: string | null
+  endDate: string | null
 }
 
 export interface Resume {
@@ -27,3 +25,5 @@ export interface Resume {
   workExperience: WorkExperience[]
   location: string
 }
+
+export type ResumePayload = Omit<Resume, 'id'>
