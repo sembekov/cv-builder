@@ -5,6 +5,7 @@ import com.example.cvbuilder.dto.response.ResumeResponse;
 import com.example.cvbuilder.entites.Education;
 import com.example.cvbuilder.entites.Resume;
 import com.example.cvbuilder.entites.WorkExperience;
+import com.example.cvbuilder.entites.enums.ResumeTemplate;
 import com.example.cvbuilder.exceptions.ResumeNotFoundException;
 import com.example.cvbuilder.mapper.EducationMapper;
 import com.example.cvbuilder.mapper.ResumeMapper;
@@ -12,6 +13,7 @@ import com.example.cvbuilder.mapper.WorkExperienceMapper;
 import com.example.cvbuilder.repositories.ResumeRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -42,7 +44,12 @@ public class ResumeService {
     }
 
     public List<ResumeResponse> getAllResumes()  {
-        return resumeRepository.findAll()
+        Sort sort = Sort.by(
+                Sort.Order.desc("updatedAt").nullsLast(),
+                Sort.Order.desc("id")
+        );
+
+        return resumeRepository.findAll(sort)
                 .stream()
                 .map(ResumeMapper::toResponse)
                 .toList();
@@ -80,6 +87,11 @@ public class ResumeService {
             workExperiences.forEach(workExperience -> workExperience.setResume(existingResume));
             existingResume.getWorkExperience().addAll(workExperiences);
         }
+        existingResume.setResumeTemplate(
+                resumeRequest.resumeTemplate() != null
+                        ? resumeRequest.resumeTemplate()
+                        : ResumeTemplate.MODERN
+        );
 
         return ResumeMapper.toResponse(existingResume);
     }
@@ -120,6 +132,9 @@ public class ResumeService {
         }
         if (resumeRequest.location() != null) {
             existingResume.setLocation(resumeRequest.location());
+        }
+        if (resumeRequest.resumeTemplate() != null) {
+            existingResume.setResumeTemplate(resumeRequest.resumeTemplate());
         }
 
         return ResumeMapper.toResponse(existingResume);

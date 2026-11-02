@@ -7,6 +7,7 @@ import com.example.cvbuilder.dto.response.ResumeResponse;
 import com.example.cvbuilder.entites.Education;
 import com.example.cvbuilder.entites.Resume;
 import com.example.cvbuilder.entites.WorkExperience;
+import com.example.cvbuilder.entites.enums.ResumeTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -23,6 +24,10 @@ public class ResumeMapper {
                 .map(WorkExperienceMapper::fromEntityToRequest)
                 .toList();
 
+        ResumeTemplate template = resume.getResumeTemplate() != null
+                ? resume.getResumeTemplate()
+                : ResumeTemplate.MODERN;
+
         return new ResumeResponse(
                 resume.getId(),
                 resume.getFullName(),
@@ -32,7 +37,8 @@ public class ResumeMapper {
                 educationRequests,
                 resume.getSkills(),
                 workExperience,
-                resume.getLocation()
+                resume.getLocation(),
+                template
         );
     }
 
@@ -68,6 +74,11 @@ public class ResumeMapper {
                         ? new ArrayList<>(resumeRequest.skills())
                         : new ArrayList<>()
         );
+
+        newResume.setResumeTemplate(resumeRequest.resumeTemplate());
+        if (resumeRequest.resumeTemplate() == null) {
+            newResume.setResumeTemplate(ResumeTemplate.MODERN);
+        }
         newResume.setLocation(resumeRequest.location());
 
         return newResume;

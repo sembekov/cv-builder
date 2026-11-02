@@ -1,6 +1,6 @@
 package com.example.cvbuilder.dto.request;
 
-import com.example.cvbuilder.entites.Education;
+import com.example.cvbuilder.entites.enums.ResumeTemplate;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -23,6 +23,7 @@ public record ResumeRequest(
         List<String> skills,
 
         List<WorkExperienceRequest> workExperience,
-        String location
+        String location,
+        ResumeTemplate resumeTemplate
 ) {
 }

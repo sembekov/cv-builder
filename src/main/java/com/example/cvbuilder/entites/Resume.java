@@ -1,11 +1,13 @@
 package com.example.cvbuilder.entites;
 
-import com.example.cvbuilder.dto.request.EducationRequest;
+import com.example.cvbuilder.entites.enums.ResumeTemplate;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.type.descriptor.sql.internal.Scale6IntervalSecondDdlType;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.sql.Array;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class Resume {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,4 +42,14 @@ public class Resume {
     @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkExperience> workExperience = new ArrayList<>();
     private String location;
+
+    @Enumerated(EnumType.STRING)
+    private ResumeTemplate resumeTemplate = ResumeTemplate.MODERN;
+
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }

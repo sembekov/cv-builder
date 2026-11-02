@@ -2,6 +2,7 @@ package com.example.cvbuilder.dto.response;
 
 import com.example.cvbuilder.dto.request.EducationRequest;
 import com.example.cvbuilder.dto.request.WorkExperienceRequest;
+import com.example.cvbuilder.entites.enums.ResumeTemplate;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ public record ResumeResponse(
         List<EducationRequest> education,
         List<String> skills,
         List<WorkExperienceRequest> workExperience,
-        String location
+        String location,
+        ResumeTemplate resumeTemplate
 ) {
 }
