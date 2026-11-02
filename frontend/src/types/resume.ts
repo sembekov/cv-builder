@@ -1,3 +1,5 @@
+export type ResumeTemplate = 'MODERN' | 'MINIMAL' | 'PROFESSIONAL'
+
 export interface Education {
   institution: string
   degree: string
@@ -24,6 +26,7 @@ export interface Resume {
   skills: string[]
   workExperience: WorkExperience[]
   location: string
+  resumeTemplate: ResumeTemplate
 }
 
 export type ResumePayload = Omit<Resume, 'id'>
