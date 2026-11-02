@@ -5,6 +5,7 @@ const API_URL = '/api/resumes'
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const message = await response.text()
+
     throw new Error(
       message || `Request failed with status ${response.status}`,
     )
@@ -52,4 +53,12 @@ export async function updateResume(
   })
 
   return handleResponse<Resume>(response)
+}
+
+export async function deleteResume(id: number): Promise<void> {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: 'DELETE',
+  })
+
+  await handleResponse<void>(response)
 }

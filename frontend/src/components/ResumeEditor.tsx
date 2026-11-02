@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type {
@@ -32,10 +33,7 @@ export default function ResumeEditor({
   const [form, setForm] = useState<ResumePayload>(() => {
     if (!initialResume) return createEmptyResume()
 
-    const {
-      id: _id,
-      ...resumeData
-    } = initialResume
+    const { id: _id, ...resumeData } = initialResume
 
     return {
       ...resumeData,
@@ -189,7 +187,6 @@ export default function ResumeEditor({
 
   return (
     <div className="min-h-screen bg-[#101114] text-[#E5E7EB]">
-      {/* Header */}
       <header className="sticky top-0 z-20 flex h-[68px] items-center justify-between border-b border-[#292B34] bg-[#141519]/95 px-5 backdrop-blur md:px-8">
         <div className="flex items-center gap-4">
           <button
@@ -201,37 +198,42 @@ export default function ResumeEditor({
           </button>
 
           <div>
-            <p className="text-xs text-[#777B87]">
-              Workspace / Editor
-            </p>
+            <p className="text-xs text-[#777B87]">Workspace / Editor</p>
             <h1 className="text-sm font-semibold">
               {initialResume ? 'Edit resume' : 'Create resume'}
             </h1>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving}
-          className="rounded-lg bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {saving ? 'Saving...' : 'Save resume'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="rounded-lg border border-[#343640] px-4 py-2.5 text-sm font-medium text-[#C4B5FD] transition hover:bg-[#25232D]"
+          >
+            Download PDF
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="rounded-lg bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save resume'}
+          </button>
+        </div>
       </header>
 
       <main className="mx-auto grid max-w-[1600px] gap-6 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)] lg:p-7">
-        {/* LEFT: FORM */}
         <section className="min-w-0 space-y-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-violet-300">
               Resume editor
             </p>
-
             <h2 className="mt-2 text-2xl font-semibold tracking-tight">
               Build your resume
             </h2>
-
             <p className="mt-2 text-sm text-[#858895]">
               Add your information. Your document updates automatically.
             </p>
@@ -243,7 +245,6 @@ export default function ResumeEditor({
             </div>
           )}
 
-          {/* Personal information */}
           <section className="rounded-xl border border-[#2B2D35] bg-[#191A1F] p-5">
             <SectionTitle
               number="01"
@@ -255,9 +256,7 @@ export default function ResumeEditor({
               <Field label="Full name">
                 <input
                   value={form.fullName}
-                  onChange={(e) =>
-                    updateField('fullName', e.target.value)
-                  }
+                  onChange={(e) => updateField('fullName', e.target.value)}
                   placeholder="John Smith"
                 />
               </Field>
@@ -266,9 +265,7 @@ export default function ResumeEditor({
                 <input
                   type="email"
                   value={form.email}
-                  onChange={(e) =>
-                    updateField('email', e.target.value)
-                  }
+                  onChange={(e) => updateField('email', e.target.value)}
                   placeholder="john@example.com"
                 />
               </Field>
@@ -286,16 +283,13 @@ export default function ResumeEditor({
               <Field label="Location">
                 <input
                   value={form.location}
-                  onChange={(e) =>
-                    updateField('location', e.target.value)
-                  }
+                  onChange={(e) => updateField('location', e.target.value)}
                   placeholder="Almaty, Kazakhstan"
                 />
               </Field>
             </div>
           </section>
 
-          {/* Summary */}
           <section className="rounded-xl border border-[#2B2D35] bg-[#191A1F] p-5">
             <SectionTitle
               number="02"
@@ -308,16 +302,13 @@ export default function ResumeEditor({
                 <textarea
                   rows={5}
                   value={form.summary}
-                  onChange={(e) =>
-                    updateField('summary', e.target.value)
-                  }
+                  onChange={(e) => updateField('summary', e.target.value)}
                   placeholder="Write a short summary of your professional background, strengths and goals..."
                 />
               </Field>
             </div>
           </section>
 
-          {/* Work experience */}
           <section className="rounded-xl border border-[#2B2D35] bg-[#191A1F] p-5">
             <div className="flex items-center justify-between gap-3">
               <SectionTitle
@@ -325,7 +316,6 @@ export default function ResumeEditor({
                 title="Work experience"
                 subtitle="Your professional background"
               />
-
               <AddButton onClick={addExperience} />
             </div>
 
@@ -363,11 +353,7 @@ export default function ResumeEditor({
                       <input
                         value={experience.position}
                         onChange={(e) =>
-                          updateExperience(
-                            index,
-                            'position',
-                            e.target.value,
-                          )
+                          updateExperience(index, 'position', e.target.value)
                         }
                         placeholder="Software Engineer"
                       />
@@ -423,7 +409,6 @@ export default function ResumeEditor({
             </div>
           </section>
 
-          {/* Education */}
           <section className="rounded-xl border border-[#2B2D35] bg-[#191A1F] p-5">
             <div className="flex items-center justify-between gap-3">
               <SectionTitle
@@ -431,7 +416,6 @@ export default function ResumeEditor({
                 title="Education"
                 subtitle="Your academic background"
               />
-
               <AddButton onClick={addEducation} />
             </div>
 
@@ -469,11 +453,7 @@ export default function ResumeEditor({
                       <input
                         value={education.degree}
                         onChange={(e) =>
-                          updateEducation(
-                            index,
-                            'degree',
-                            e.target.value,
-                          )
+                          updateEducation(index, 'degree', e.target.value)
                         }
                         placeholder="Bachelor's degree"
                       />
@@ -526,7 +506,6 @@ export default function ResumeEditor({
             </div>
           </section>
 
-          {/* Skills */}
           <section className="rounded-xl border border-[#2B2D35] bg-[#191A1F] p-5">
             <SectionTitle
               number="05"
@@ -588,7 +567,7 @@ export default function ResumeEditor({
           </button>
         </section>
 
-        {/* RIGHT: LIVE PREVIEW */}
+        {/* Live preview */}
         <aside className="min-w-0 lg:sticky lg:top-[88px] lg:h-[calc(100vh-112px)]">
           <div className="flex h-full flex-col overflow-hidden rounded-xl border border-[#2B2D35] bg-[#191A1F]">
             <div className="flex h-14 shrink-0 items-center justify-between border-b border-[#2B2D35] px-5">
@@ -605,7 +584,7 @@ export default function ResumeEditor({
             </div>
 
             <div className="flex-1 overflow-auto bg-[#202127] p-4 md:p-7">
-              <div className="mx-auto min-h-[842px] w-full max-w-[595px] bg-white p-7 text-[#292524] shadow-2xl sm:p-10">
+              <div className="resume-paper mx-auto min-h-[842px] w-full max-w-[595px] bg-white p-7 text-[#292524] shadow-2xl sm:p-10">
                 <header className="border-b-2 border-[#292524] pb-5">
                   <h1 className="break-words text-3xl font-bold tracking-tight">
                     {form.fullName || 'Your Name'}
@@ -704,8 +683,6 @@ export default function ResumeEditor({
   )
 }
 
-/* Reusable UI components */
-
 function SectionTitle({
   number,
   title,
@@ -741,7 +718,6 @@ function Field({
       <span className="block text-xs font-medium text-[#A1A3AE]">
         {label}
       </span>
-
       {children}
     </label>
   )
@@ -769,7 +745,6 @@ function ItemHeader({
   return (
     <div className="flex items-center justify-between">
       <span className="text-xs font-medium text-[#A1A3AE]">{title}</span>
-
       <button
         type="button"
         onClick={onRemove}
@@ -801,7 +776,6 @@ function PreviewSection({
       <h2 className="mb-3 border-b border-[#D6D3D1] pb-2 text-xs font-bold uppercase tracking-[0.12em]">
         {title}
       </h2>
-
       {children}
     </section>
   )

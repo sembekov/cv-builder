@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ResumeEditor from './components/ResumeEditor'
 import {
   createResume,
+  deleteResume,
   getResumes,
   updateResume,
 } from './services/resumeService'
@@ -14,10 +15,54 @@ function App() {
 
   const [showEditor, setShowEditor] = useState(false)
   const [selectedResume, setSelectedResume] = useState<Resume | undefined>()
+  const [deletingResumeId, setDeletingResumeId] = useState<number | null>(null)
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  const [pendingExport, setPendingExport] = useState(false)
+
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     loadResumes()
   }, [])
+
+  // Close the action menu when clicking outside or pressing Escape.
+  useEffect(() => {
+    if (openMenuId === null) return
+
+    function handleOutsideClick(event: PointerEvent) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
+        setOpenMenuId(null)
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setOpenMenuId(null)
+      }
+    }
+
+    document.addEventListener('pointerdown', handleOutsideClick)
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsideClick)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [openMenuId])
+
+  useEffect(() => {
+    if (!showEditor || !pendingExport) return
+
+    const timeoutId = window.setTimeout(() => {
+      window.print()
+      setPendingExport(false)
+    }, 300)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [showEditor, pendingExport, selectedResume])
 
   async function loadResumes() {
     try {
@@ -35,12 +80,22 @@ function App() {
 
   function openNewResume() {
     setSelectedResume(undefined)
+    setPendingExport(false)
     setShowEditor(true)
   }
 
   function openExistingResume(resume: Resume) {
     setSelectedResume(resume)
+    setPendingExport(false)
     setShowEditor(true)
+    setOpenMenuId(null)
+  }
+
+  function exportResume(resume: Resume) {
+    setSelectedResume(resume)
+    setPendingExport(true)
+    setShowEditor(true)
+    setOpenMenuId(null)
   }
 
   async function handleSave(data: ResumePayload) {
@@ -56,11 +111,43 @@ function App() {
     setSelectedResume(undefined)
   }
 
+  async function handleDelete(resume: Resume) {
+    setOpenMenuId(null)
+
+    const confirmed = window.confirm(
+      `Delete the resume for ${resume.fullName || 'this person'}?\n\nThis action cannot be undone.`,
+    )
+
+    if (!confirmed) return
+
+    try {
+      setError(null)
+      setDeletingResumeId(resume.id)
+
+      await deleteResume(resume.id)
+
+      setResumes((current) =>
+        current.filter((item) => item.id !== resume.id),
+      )
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Could not delete this resume.',
+      )
+    } finally {
+      setDeletingResumeId(null)
+    }
+  }
+
   if (showEditor) {
     return (
       <ResumeEditor
         initialResume={selectedResume}
-        onBack={() => setShowEditor(false)}
+        onBack={() => {
+          setShowEditor(false)
+          setPendingExport(false)
+        }}
         onSave={handleSave}
       />
     )
@@ -181,14 +268,6 @@ function App() {
                   Create a polished resume, customize every section, and
                   export it as a professional PDF.
                 </p>
-
-                <button
-                  type="button"
-                  onClick={openNewResume}
-                  className="mt-6 rounded-lg bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-400"
-                >
-                  Create a resume →
-                </button>
               </div>
             </section>
 
@@ -213,6 +292,24 @@ function App() {
                 </div>
               </div>
 
+              {error && (
+                <div className="mb-5 rounded-xl border border-red-500/20 bg-red-500/[0.06] p-5">
+                  <p className="text-sm font-semibold text-red-300">
+                    Something went wrong
+                  </p>
+
+                  <p className="mt-1 text-sm text-red-300/70">{error}</p>
+
+                  <button
+                    type="button"
+                    onClick={loadResumes}
+                    className="mt-3 text-xs font-semibold text-red-300 underline"
+                  >
+                    Reload resumes
+                  </button>
+                </div>
+              )}
+
               {loading && (
                 <div className="rounded-xl border border-[#292B34] bg-[#17181D] py-16 text-center">
                   <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[#393B45] border-t-violet-400" />
@@ -220,26 +317,6 @@ function App() {
                   <p className="mt-4 text-sm text-[#858895]">
                     Loading your resumes...
                   </p>
-                </div>
-              )}
-
-              {error && (
-                <div className="rounded-xl border border-red-500/20 bg-red-500/[0.06] p-5">
-                  <p className="text-sm font-semibold text-red-300">
-                    Could not load resumes
-                  </p>
-
-                  <p className="mt-1 text-sm text-red-300/70">
-                    {error}
-                  </p>
-
-                  <button
-                    type="button"
-                    onClick={loadResumes}
-                    className="mt-3 text-xs font-semibold text-red-300 underline"
-                  >
-                    Try again
-                  </button>
                 </div>
               )}
 
@@ -270,44 +347,52 @@ function App() {
 
               {!loading && !error && resumes.length > 0 && (
                 <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                  {resumes.map((resume) => (
-                    <article
-                      key={resume.id}
-                      className="group overflow-hidden rounded-xl border border-[#2B2D35] bg-[#191A1F] transition duration-200 hover:-translate-y-1 hover:border-violet-400/30 hover:bg-[#1C1D23]"
-                    >
-                      {/* Document thumbnail */}
-                      <div className="flex h-48 items-center justify-center border-b border-[#292B34] bg-[#202127] p-5">
-                        <div className="h-full w-[125px] overflow-hidden rounded-sm bg-[#F5F5F4] p-3 shadow-xl transition duration-200 group-hover:scale-[1.03]">
-                          <div className="border-b border-[#D6D3D1] pb-2">
-                            <div className="h-2 w-16 rounded-sm bg-[#292524]" />
-                            <div className="mt-1.5 h-1 w-12 rounded-sm bg-[#A8A29E]" />
-                          </div>
+                  {resumes.map((resume) => {
+                    const isDeleting = deletingResumeId === resume.id
+                    const isMenuOpen = openMenuId === resume.id
 
-                          <div className="mt-3">
-                            <div className="h-1 w-9 rounded-sm bg-[#57534E]" />
-                            <div className="mt-2 h-1 w-full rounded-sm bg-[#D6D3D1]" />
-                            <div className="mt-1 h-1 w-4/5 rounded-sm bg-[#D6D3D1]" />
-                            <div className="mt-1 h-1 w-11/12 rounded-sm bg-[#D6D3D1]" />
-                          </div>
+                    return (
+                      <article
+                        key={resume.id}
+                        className="group overflow-visible rounded-xl border border-[#2B2D35] bg-[#191A1F] transition duration-200 hover:-translate-y-1 hover:border-violet-400/30 hover:bg-[#1C1D23]"
+                      >
+                        {/* Document thumbnail */}
+                        <button
+                          type="button"
+                          onClick={() => openExistingResume(resume)}
+                          className="flex h-48 w-full items-center justify-center overflow-hidden rounded-t-xl border-b border-[#292B34] bg-[#202127] p-5"
+                          aria-label={`Edit resume for ${resume.fullName}`}
+                        >
+                          <div className="h-full w-[125px] overflow-hidden rounded-sm bg-[#F5F5F4] p-3 shadow-xl transition duration-200 group-hover:scale-[1.03]">
+                            <div className="border-b border-[#D6D3D1] pb-2">
+                              <div className="h-2 w-16 rounded-sm bg-[#292524]" />
+                              <div className="mt-1.5 h-1 w-12 rounded-sm bg-[#A8A29E]" />
+                            </div>
 
-                          <div className="mt-3">
-                            <div className="h-1 w-12 rounded-sm bg-[#57534E]" />
-                            <div className="mt-2 h-1 w-full rounded-sm bg-[#D6D3D1]" />
-                            <div className="mt-1 h-1 w-3/4 rounded-sm bg-[#D6D3D1]" />
-                            <div className="mt-1 h-1 w-5/6 rounded-sm bg-[#D6D3D1]" />
-                          </div>
+                            <div className="mt-3">
+                              <div className="h-1 w-9 rounded-sm bg-[#57534E]" />
+                              <div className="mt-2 h-1 w-full rounded-sm bg-[#D6D3D1]" />
+                              <div className="mt-1 h-1 w-4/5 rounded-sm bg-[#D6D3D1]" />
+                              <div className="mt-1 h-1 w-11/12 rounded-sm bg-[#D6D3D1]" />
+                            </div>
 
-                          <div className="mt-3">
-                            <div className="h-1 w-10 rounded-sm bg-[#57534E]" />
-                            <div className="mt-2 h-1 w-full rounded-sm bg-[#D6D3D1]" />
-                            <div className="mt-1 h-1 w-4/5 rounded-sm bg-[#D6D3D1]" />
-                          </div>
-                        </div>
-                      </div>
+                            <div className="mt-3">
+                              <div className="h-1 w-12 rounded-sm bg-[#57534E]" />
+                              <div className="mt-2 h-1 w-full rounded-sm bg-[#D6D3D1]" />
+                              <div className="mt-1 h-1 w-3/4 rounded-sm bg-[#D6D3D1]" />
+                              <div className="mt-1 h-1 w-5/6 rounded-sm bg-[#D6D3D1]" />
+                            </div>
 
-                      {/* Resume details */}
-                      <div className="p-5">
-                        <div className="flex items-start justify-between gap-3">
+                            <div className="mt-3">
+                              <div className="h-1 w-10 rounded-sm bg-[#57534E]" />
+                              <div className="mt-2 h-1 w-full rounded-sm bg-[#D6D3D1]" />
+                              <div className="mt-1 h-1 w-4/5 rounded-sm bg-[#D6D3D1]" />
+                            </div>
+                          </div>
+                        </button>
+
+                        {/* Resume details */}
+                        <div className="p-5">
                           <div className="min-w-0">
                             <h3 className="truncate text-sm font-semibold text-[#E5E7EB]">
                               {resume.fullName || 'Untitled resume'}
@@ -318,25 +403,78 @@ function App() {
                             </p>
                           </div>
 
-                          <span className="text-[#777B87]">···</span>
-                        </div>
+                          <div className="mt-5 flex items-center justify-between border-t border-[#2B2D35] pt-4">
+                            <span className="text-[11px] text-[#777B87]">
+                              Resume #{resume.id}
+                            </span>
 
-                        <div className="mt-5 flex items-center justify-between border-t border-[#2B2D35] pt-4">
-                          <span className="text-[11px] text-[#777B87]">
-                            Resume #{resume.id}
-                          </span>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => openExistingResume(resume)}
+                                className="rounded-md bg-violet-500/10 px-3 py-2 text-xs font-semibold text-violet-300 transition hover:bg-violet-500/20 hover:text-violet-200"
+                              >
+                                Edit
+                              </button>
 
-                          <button
-                            type="button"
-                            onClick={() => openExistingResume(resume)}
-                            className="text-xs font-semibold text-violet-300 transition hover:text-violet-200"
-                          >
-                            Open editor →
-                          </button>
+                              {/* More actions menu */}
+                              <div
+                                className="relative"
+                                ref={isMenuOpen ? menuRef : null}
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setOpenMenuId(
+                                      isMenuOpen ? null : resume.id,
+                                    )
+                                  }
+                                  aria-label="More resume actions"
+                                  aria-expanded={isMenuOpen}
+                                  className={`flex h-8 w-8 items-center justify-center rounded-md border transition ${
+                                    isMenuOpen
+                                      ? 'border-[#45404F] bg-[#292530] text-white'
+                                      : 'border-[#30323B] text-[#A1A3AE] hover:border-[#45404F] hover:bg-[#292B34] hover:text-white'
+                                  }`}
+                                >
+                                  <span className="text-lg leading-none">
+                                    ⋯
+                                  </span>
+                                </button>
+
+                                {isMenuOpen && (
+                                  <div className="absolute right-0 bottom-10 z-30 w-48 overflow-hidden rounded-lg border border-[#383A45] bg-[#202127] p-1.5 shadow-xl shadow-black/30">
+                                    <button
+                                      type="button"
+                                      onClick={() => exportResume(resume)}
+                                      className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium text-[#E5E7EB] transition hover:bg-[#30313A] hover:text-white"
+                                    >
+                                      <span className="text-base text-[#C4B5FD]">
+                                        ↓
+                                      </span>
+                                      Export PDF
+                                    </button>
+
+                                    <div className="my-1 border-t border-[#343640]" />
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDelete(resume)}
+                                      disabled={isDeleting}
+                                      className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium text-[#F87171] transition hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                      <span className="text-base">⌫</span>
+                                      Delete resume
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </article>
-                  ))}
+                      </article>
+                    )
+                  })}
                 </div>
               )}
             </section>
